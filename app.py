@@ -12,7 +12,6 @@ api_key = "YOUR_API_KEY"
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 
-
 def init_db():
     conn = sqlite3.connect("food_waste.db")
     c = conn.cursor()
@@ -49,7 +48,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 @app.route("/ussd", methods=["POST"])
 def ussd():
     # Read the variables sent via POST from our API
@@ -64,6 +62,7 @@ def ussd():
         response += "3. Request Food Waste Pickup\n"
         response += "4. Offer Available Food Waste\n"
         response += "5. Check Collection Locations\n"
+        response += "6. View Pricing Options\n"  # New option for pricing
         return response
 
     elif text == "1" or text == "2":
@@ -91,6 +90,13 @@ def ussd():
 
             conn = sqlite3.connect("food_waste.db")
             c = conn.cursor()
+            
+            # Check if the user is already registered
+            c.execute("SELECT * FROM users WHERE phone_number = ?", (phone_number,))
+            existing_user = c.fetchone()
+            if existing_user:
+                return "END You are already registered!"
+
             c.execute(
                 """
                 INSERT INTO users (phone_number, user_type, name, location, waste_types)
@@ -244,25 +250,22 @@ def ussd():
             response += f"{loc[0]}: {loc[2]} suppliers, {loc[3]} collectors\n"
         return response
 
-    else:
-        return "END Invalid input"
+    elif text == "6":
+        # View Pricing Options
+        response = "CON Select a pricing option:\n"
+        response += "1. 5 KG Ksh 2500\n"
+        response += "2. 10 KG Ksh 9500\n"
+        response += "3. 15 KG Ksh 15000\n"
+        response += "4. 20 KG Ksh 20000\n"
+        response += "5. 30 KG Ksh 30000\n"
+        return response
 
-
-class SMS:
-    def __init__(self):
-        self.username = username
-        self.api_key = api_key
-        africastalking.initialize(self.username, self.api_key)
-        self.sms = africastalking.SMS
-
-    def send(self, message, recipients):
-        try:
-            response = self.sms.send(message, recipients)
-            print(response)
-        except Exception as e:
-            print(f"Error sending SMS: {str(e)}")
-
-
-if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
+    elif text.startswith("6*"):
+        parts = text.split("*")
+        if len(parts) == 2:
+            pricing_options = {
+                "1": "5 KG Ksh 2500",
+                "2": "10 KG Ksh 9500",
+                "3": "15 KG Ksh 15000",
+                "4": "20 KG Ksh 20000",
+                "5": "30 KG Ksh 300
