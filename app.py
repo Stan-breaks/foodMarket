@@ -1,4 +1,5 @@
 from __future__ import print_function
+import os
 import africastalking
 from flask import Flask, request
 import sqlite3
@@ -281,4 +282,6 @@ def ussd():
 
 if __name__ == "__main__":
     init_db()
-    app.run(port=5000)
+    port = int(os.environ.get("PORT", 10000))
+    # Run the app binding to 0.0.0.0
+    app.run(host="0.0.0.0", port=port)
