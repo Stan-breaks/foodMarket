@@ -12,6 +12,7 @@ api_key = "YOUR_API_KEY"
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 
+
 def init_db():
     conn = sqlite3.connect("food_waste.db")
     c = conn.cursor()
@@ -47,6 +48,7 @@ def init_db():
 
     conn.commit()
     conn.close()
+
 
 @app.route("/ussd", methods=["POST"])
 def ussd():
@@ -90,7 +92,7 @@ def ussd():
 
             conn = sqlite3.connect("food_waste.db")
             c = conn.cursor()
-            
+
             # Check if the user is already registered
             c.execute("SELECT * FROM users WHERE phone_number = ?", (phone_number,))
             existing_user = c.fetchone()
@@ -268,4 +270,15 @@ def ussd():
                 "2": "10 KG Ksh 9500",
                 "3": "15 KG Ksh 15000",
                 "4": "20 KG Ksh 20000",
-                "5": "30 KG Ksh 300
+                "5": "30 KG Ksh 30000",
+            }
+            selected_option = pricing_options.get(parts[1], None)
+            if selected_option:
+                return f"END You selected: {selected_option}"
+            else:
+                return "END Invalid selection."
+
+
+if __name__ == "__main__":
+    init_db()
+    app.run(port=5000)
